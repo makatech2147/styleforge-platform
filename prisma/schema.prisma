@@ -35,12 +35,28 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model CustomerProfile {
+  id             Int     @id @default(autoincrement())
+  userId         String  @unique
+  // ... other fields ...
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TailorProfile {
+  id              Int     @id @default(autoincrement())
+  userId          String  @unique
+  // ... other fields ...
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   password      String?
+  customerProfile CustomerProfile?
+  tailorProfile   TailorProfile?
   role          String
   image         String?
   accounts      Account[]
