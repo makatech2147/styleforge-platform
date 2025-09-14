@@ -108,11 +108,11 @@ async authorize(credentials) {
     return token;
   },
   async session({ session, token }) {
-    if (session?.user) {
-      session.user.role = token.role as string;
-      session.user.id = token.sub as string;
-    }
-    return session;
-  },
+  if (session?.user) {
+    session.user.role = token.role as string;
+    session.user.id = token.sub as string;
+  }
+  return session;
+},
 },
 };
