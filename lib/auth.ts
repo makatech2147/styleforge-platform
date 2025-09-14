@@ -68,18 +68,25 @@ async authorize(credentials) {
     });
 
     if (credentials.role === 'customer') {
-      await prisma.customerProfile.create({
-        data: {
-          userId: newUser.id
-        }
-      });
+      await prisma.user.update({
+       where: { id: newUser.id },
+       data: {
+       customerProfile: {
+       create: {} // Creates an empty customer profile
+    }
+  }
+});
     } else if (credentials.role === 'tailor') {
-      await prisma.tailorProfile.create({
-        data: {
-          userId: newUser.id,
-          isAvailable: true
-        }
-      });
+      await prisma.user.update({
+  where: { id: newUser.id },
+  data: {
+    tailorProfile: {
+      create: {
+        isAvailable: true
+      }
+    }
+  }
+});
     }
 
     return {
