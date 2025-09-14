@@ -52,50 +52,51 @@ async authorize(credentials) {
       role: user.role,
       name: user.name,
     };
-  } else {
-    if (!credentials.role) {
-      throw new Error("Role is required for sign-up.");
-    }
-    
-    const hashedPassword = await bcrypt.hash(credentials.password, 10);
-    const newUser = await prisma.user.create({
-      data: {
-        email: credentials.email,
-        password: hashedPassword,
-        role: credentials.role,
-        name: credentials.email.split('@')[0],
-      },
-    });
+  // ... other code ...
 
-    if (credentials.role === 'customer') {
-      await prisma.user.update({
-       where: { id: newUser.id },
-       data: {
-       customerProfile: {
-       create: {} // Creates an empty customer profile
-    }
+} else {
+  if (!credentials.role) {
+    throw new Error("Role is required for sign-up.");
   }
-});
-    } else if (credentials.role === 'tailor') {
-      await prisma.user.update({
-  where: { id: newUser.id },
-  data: {
-    tailorProfile: {
+  
+  const hashedPassword = await bcrypt.hash(credentials.password, 10);
+  
+  // Create user with profile in a single transaction
+  const userData: any = {
+    email: credentials.email,
+    password: hashedPassword,
+    role: credentials.role,
+    name: credentials.email.split('@')[0],
+  };
+
+  // Add profile relation based on role
+  if (credentials.role === 'customer') {
+    userData.customerProfile = {
+      create: {} // Creates an empty customer profile
+    };
+  } else if (credentials.role === 'tailor') {
+    userData.tailorProfile = {
       create: {
         isAvailable: true
       }
-    }
-  }
-});
-    }
-
-    return {
-      id: newUser.id.toString(),
-      email: newUser.email,
-      role: newUser.role,
-      name: newUser.name,
     };
   }
+
+  const newUser = await prisma.user.create({
+    data: userData,
+    include: {
+      customerProfile: credentials.role === 'customer',
+      tailorProfile: credentials.role === 'tailor'
+    }
+  });
+
+  return {
+    id: newUser.id.toString(),
+    email: newUser.email,
+    role: newUser.role,
+    name: newUser.name,
+  };
+}
 },
     }),
   ],
