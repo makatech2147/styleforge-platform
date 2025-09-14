@@ -101,18 +101,18 @@ async authorize(credentials) {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session?.user) {
-        session.user.role = token.role as string;
-        session.user.id = token.sub as string;
-      }
-      return session;
-    },
+  async jwt({ token, user }) {
+    if (user) {
+      token.role = user.role;
+    }
+    return token;
   },
+  async session({ session, token }) {
+    if (session?.user) {
+      session.user.role = token.role as string;
+      session.user.id = token.sub as string;
+    }
+    return session;
+  },
+},
 };
