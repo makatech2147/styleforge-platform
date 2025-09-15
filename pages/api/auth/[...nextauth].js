@@ -1,7 +1,9 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { verifyPassword } from '../../../lib/auth'; // You'll need to implement this
-import { connectToDatabase } from '../../../lib/db'; // You'll need to implement this
+import { PrismaClient } from '@prisma/client';
+import { verifyPassword } from '../../../lib/auth';
+
+const prisma = new PrismaClient();
 
 export default NextAuth({
   session: {
@@ -16,19 +18,15 @@ export default NextAuth({
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        // Connect to your database
-        const client = await connectToDatabase();
-        const db = client.db();
-
-        // Find user by email
-        const usersCollection = db.collection('users');
-        const user = await usersCollection.findOne({
-          email: credentials.email,
+        // Find user by email using Prisma
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
         });
 
         // If no user found, return null
         if (!user) {
-          client.close();
           throw new Error('No user found with that email address.');
         }
 
@@ -40,14 +38,12 @@ export default NextAuth({
 
         // If password is invalid, return null
         if (!isValid) {
-          client.close();
           throw new Error('Invalid password.');
         }
 
         // If everything is valid, return user object
-        client.close();
         return {
-          id: user._id.toString(),
+          id: user.id,
           email: user.email,
           name: user.name,
         };
