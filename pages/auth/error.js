@@ -1,13 +1,16 @@
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
 
-export default function Error() {
-  const router = useRouter()
-  const { error } = router.query
+export default function AuthError() {
+  const router = useRouter();
+  const { error } = router.query;
 
   return (
     <div>
-      <h1>An error occurred</h1>
-      <p>{error}</p>
+      <h1>Authentication Error</h1>
+      <p>{error || 'An error occurred during authentication'}</p>
+      <button onClick={() => router.push('/auth/signin')}>
+        Go to Sign In
+      </button>
     </div>
-  )
+  );
 }
